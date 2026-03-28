@@ -1,0 +1,5 @@
+_pycache_/
+models/
+data/test.csv
+data/train.csv
+venv/
