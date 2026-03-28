@@ -33,8 +33,7 @@ The detector uses a **Stacking Classifier** architecture. It consists of three b
 
 1. **Clone the repository:**
    ```bash
-   git clone <repository-url>
-   cd "SNLP Hindi Fake News Detection"
+   git clone https://github.com/ArnavJoshi14/hindi-fake-news-detection
    ```
 
 2. **Create and activate a virtual environment:**
