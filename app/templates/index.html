@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hindi Fake News Detector</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nirmala+UI:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        * { box-sizing: border-box; font-family: 'Nirmala UI', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 2rem; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; color: var(--primary); margin-bottom: 2rem; }
+
+        .card { background: var(--card); padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom: 2rem; }
+        
+        .tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; }
+        .tab { padding: 0.75rem 1.5rem; cursor: pointer; border-radius: 0.5rem; transition: 0.3s; font-weight: bold; }
+        .tab.active { background: var(--primary); color: white; }
+        .tab:not(.active):hover { background: #f1f5f9; }
+
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        textarea, input { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 1rem; }
+        textarea { height: 150px; resize: vertical; }
+
+        .social-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; display: none; }
+        .social-fields.active { display: grid; }
+
+        button { background: var(--primary); color: white; border: none; padding: 1rem 2rem; border-radius: 0.5rem; cursor: pointer; font-size: 1.1rem; width: 100%; transition: 0.3s; font-weight: bold; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .result { padding: 2rem; border-radius: 1rem; text-align: center; display: none; margin-top: 2rem; }
+        .result.fake { background: #fee2e2; border: 2px solid var(--danger); }
+        .result.real { background: #dcfce7; border: 2px solid var(--success); }
+        
+        .verdict { font-size: 2.5rem; font-weight: 900; margin: 0.5rem 0; }
+        .confidence { font-size: 1.1rem; color: var(--secondary); margin-bottom: 1.5rem; }
+
+        .scores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .score-box { background: rgba(255,255,255,0.5); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(0,0,0,0.1); }
+        .score-val { font-size: 1.5rem; font-weight: bold; display: block; }
+        .score-label { font-size: 0.8rem; text-transform: uppercase; color: var(--secondary); }
+
+        .loading { display: none; text-align: center; font-weight: bold; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Hindi News Authenticity Detector</h1>
+
+    <div class="card">
+        <div class="tabs">
+            <div class="tab active" onclick="setMode('website', this)">📰 Website News</div>
+            <div class="tab" onclick="setMode('social_media', this)">📱 Social Media</div>
+        </div>
+
+        <label for="text">Article Text (Hindi)</label>
+        <textarea id="text" placeholder="लेख का पाठ यहाँ पेस्ट करें..."></textarea>
+
+        <div id="socialFields" class="social-fields">
+            <div>
+                <label>User Name</label>
+                <input type="text" id="name" placeholder="John Doe">
+            </div>
+            <div>
+                <label>Screen Name (@handle)</label>
+                <input type="text" id="screen_name" placeholder="john_d123">
+            </div>
+            <div>
+                <label>Followers Count</label>
+                <input type="number" id="followers" value="0">
+            </div>
+            <div>
+                <label>Friends Count</label>
+                <input type="number" id="friends" value="0">
+            </div>
+            <div>
+                <label>Statuses Count</label>
+                <input type="number" id="statuses" value="0">
+            </div>
+            <div>
+                <label>Location</label>
+                <input type="text" id="location" placeholder="India">
+            </div>
+            <div style="grid-column: span 2; display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" id="verified" style="width: auto; margin-bottom: 0;">
+                <label style="margin-bottom: 0;">Verified Account</label>
+            </div>
+        </div>
+
+        <button onclick="analyzeNews()" id="btnAnalyze">Analyze News ➔</button>
+    </div>
+
+    <div id="loading" class="loading">Analyzing... Please wait...</div>
+
+    <div id="resultBox" class="result">
+        <div id="labelMsg">This news is</div>
+        <div id="verdict" class="verdict">REAL</div>
+        <div id="confidence" class="confidence">Confidence Score: 0.00%</div>
+        
+        <div class="scores-grid" id="scoresGrid">
+            <!-- Dynamic scores -->
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentMode = 'website';
+
+    function setMode(mode, el) {
+        currentMode = mode;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        
+        const socialFields = document.getElementById('socialFields');
+        if(mode === 'social_media') socialFields.classList.add('active');
+        else socialFields.classList.remove('active');
+    }
+
+    async function analyzeNews() {
+        const text = document.getElementById('text').value;
+        if(!text) return alert("Please enter some text!");
+
+        const btn = document.getElementById('btnAnalyze');
+        const loader = document.getElementById('loading');
+        const resBox = document.getElementById('resultBox');
+
+        btn.disabled = true;
+        loader.style.display = 'block';
+        resBox.style.display = 'none';
+
+        const payload = {
+            mode: currentMode,
+            text: text
+        };
+
+        if(currentMode === 'social_media') {
+            payload.name = document.getElementById('name').value;
+            payload.screen_name = document.getElementById('screen_name').value;
+            payload.followers_count = document.getElementById('followers').value;
+            payload.friends_count = document.getElementById('friends').value;
+            payload.statuses_count = document.getElementById('statuses').value;
+            payload.location = document.getElementById('location').value;
+            payload.verified = document.getElementById('verified').checked;
+        }
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            displayResult(data);
+        } catch (e) {
+            alert("Analysis failed. Please check if the server is running.");
+        } finally {
+            btn.disabled = false;
+            loader.style.display = 'none';
+        }
+    }
+
+    function displayResult(data) {
+        const resBox = document.getElementById('resultBox');
+        const verdict = document.getElementById('verdict');
+        const confidence = document.getElementById('confidence');
+        const grid = document.getElementById('scoresGrid');
+
+        resBox.style.display = 'block';
+        resBox.className = 'result ' + (data.label === 'FAKE' ? 'fake' : 'real');
+        verdict.innerText = data.label;
+        confidence.innerText = `Confidence Score: ${(data.confidence * 100).toFixed(2)}%`;
+
+        let gridHtml = `
+            <div class="score-box">
+                <span class="score-val">${(data.model_scores.text_model * 100).toFixed(1)}%</span>
+                <span class="score-label">Text Meaning</span>
+            </div>
+            <div class="score-box">
+                <span class="score-val">${(data.model_scores.style_model * 100).toFixed(1)}%</span>
+                <span class="score-label">Writing Style</span>
+            </div>
+            <div class="score-box">
+                <span class="score-val">${(data.model_scores.tfidf_model * 100).toFixed(1)}%</span>
+                <span class="score-label">Keyword Freq</span>
+            </div>
+        `;
+
+        if(data.model_scores.user_reliability !== null) {
+            gridHtml += `
+                <div class="score-box">
+                    <span class="score-val">${(data.model_scores.user_reliability * 100).toFixed(1)}%</span>
+                    <span class="score-label">User Credibility</span>
+                </div>
+            `;
+        }
+
+        grid.innerHTML = gridHtml;
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
