@@ -1,94 +1,139 @@
-# Hindi Fake News Detection
+# 🇮🇳 Hindi Fake News Detection System
 
-A robust, multi-layered machine learning system designed to detect fake news in Hindi. This project employs an ensemble (meta-model) approach, combining semantic embeddings, stylistic features, and traditional TF-IDF analysis to achieve high accuracy.
+A comprehensive, multi-layered machine learning system designed to detect fake news in Hindi. This project uses a **Stacking Classifier** architecture that combines semantic deep learning, stylistic linguistic analysis, traditional TF-IDF keyword patterns, and **social media user reliability metrics**.
 
-## 🚀 Overview
+---
 
-The detector uses a **Stacking Classifier** architecture. It consists of three base models whose outputs are fed into a final meta-model (Logistic Regression) to make the ultimate decision.
+## 🚀 Key Features
 
-### Base Models:
-1.  **Semantic Model**: Uses `SentenceTransformer` (multilingual-MiniLM) to capture the deep meaning of the text.
-2.  **Stylistic Model**: Analyzes linguistic patterns such as word count, sentence length, punctuation usage, and stopword ratios.
-3.  **TF-IDF Model**: Traditional N-gram analysis to capture specific keyword patterns common in fake or real news.
+*   **Multi-Model Ensemble**: Combines three specialized base models for text analysis.
+*   **Social Media Integration**: Predicts news veracity by factoring in the credibility of the user sharing the content.
+*   **Explainable AI (XAI)**: Uses LIME and SHAP to highlight *why* a piece of news was flagged as fake.
+*   **Interactive Web Interface**: A Flask-based dashboard for real-time testing in both "Website" (text-only) and "Social Media" (text + user profile) modes.
+
+---
 
 ## 📂 Project Structure
 
 ```text
+├── app/                    # Web application (Flask)
+│   ├── app.py              # Flask server
+│   └── templates/          # HTML templates
 ├── data/                   # Dataset files (CSV)
 │   ├── hindi_fake_news.csv # Raw fake news data
 │   ├── hindi_true_news.csv # Raw true news data
-│   ├── train.csv           # Processed training split
-│   └── test.csv            # Processed testing split
+│   ├── users.csv           # Real user profiles
+│   ├── fusers.csv          # Fake/Bot user profiles
+│   ├── train.csv / test.csv # Split news datasets
+│   └── train_users.csv     # Split user datasets
 ├── models/                 # Saved model weights (.pkl)
-├── create_dataset.py       # Data preprocessing and splitting
-├── train_models.py         # Training the three base models
-├── train_meta_model.py     # Training the final ensemble model
-├── model_pipeline.py       # Unified pipeline for inference
-├── predict.py              # CLI script for testing individual articles
-├── requirements.txt        # Project dependencies
-└── README.md               # Project documentation
+├── create_dataset.py       # News data preprocessing
+├── create_user_split.py    # User data preprocessing
+├── train_models.py         # Trains the 3 base text models
+├── train_user_model.py     # Trains the user reliability model
+├── train_meta_model.py     # Trains the standard ensemble
+├── train_social_meta_model.py # Trains the social-aware ensemble
+├── evaluate_models.py      # Comprehensive performance metrics
+├── explainability.py       # LIME & SHAP implementation
+├── model_pipeline.py       # Unified inference logic
+├── predict.py              # CLI testing script
+└── requirements.txt        # Dependencies
 ```
 
-## 🛠️ Installation
+---
+
+## 🛠️ Installation & Setup
 
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/ArnavJoshi14/hindi-fake-news-detection
+   cd hindi-fake-news-detection
    ```
 
-2. **Create and activate a virtual environment:**
+2. **Set up Virtual Environment:**
    ```bash
    python -m venv venv
-   # On Windows:
+   # Windows:
    .\venv\Scripts\activate
-   # On Unix/macOS:
+   # Unix/macOS:
    source venv/bin/activate
    ```
 
-3. **Install dependencies:**
+3. **Install Dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
 
+---
+
 ## 📈 Training Workflow
 
-To train the system from scratch, follow these steps in order:
+To build the entire system from scratch, run these scripts in order:
 
-1.  **Prepare the Dataset**:
+1.  **Data Preparation**:
     ```bash
     python create_dataset.py
+    python create_user_split.py
     ```
-    This combines the raw CSVs into `train.csv` and `test.csv`.
 
-2.  **Train Base Models**:
+2.  **Train Base Components**:
     ```bash
-    python train_models.py
+    python train_models.py      # Semantic, Style, and TF-IDF models
+    python train_user_model.py  # User Reliability model
     ```
-    This trains the Semantic, Stylistic, and TF-IDF models and saves them to the `models/` directory.
 
-3.  **Train Meta Model**:
+3.  **Train Ensemble (Meta) Models**:
     ```bash
-    python train_meta_model.py
+    python train_meta_model.py        # Standard (Text-only)
+    python train_social_meta_model.py # Social-Media aware
     ```
-    This generates predictions from base models on the training set and trains the final Logistic Regression meta-model. It also outputs evaluation metrics (Accuracy, F1, ROC-AUC).
 
-## 🔮 Usage (Inference)
+4.  **Evaluate**:
+    ```bash
+    python evaluate_models.py
+    ```
 
-You can test the model on any Hindi news article using the `predict.py` script:
+---
 
+## 🔮 Usage
+
+### 1. Web Dashboard (Recommended)
+Launch the interactive interface to test articles:
+```bash
+python app/app.py
+```
+Open `http://localhost:5000` in your browser.
+
+### 2. CLI Prediction
+Test individual articles via terminal:
 ```bash
 python predict.py
 ```
-When prompted, paste the Hindi text of the article. The system will provide:
-*   Final Prediction (REAL or FAKE)
-*   Confidence Score
-*   Detailed breakdown of scores from each individual base model.
+
+### 3. Explainability
+To generate visual explanations (LIME/SHAP plots) for a specific text, you can call functions within `explainability.py`.
+
+---
+
+## 🧠 Model Architecture
+
+### Base Models:
+1.  **Semantic (SBERT)**: Uses `multilingual-MiniLM-L12-v2` to understand the deep contextual meaning of Hindi text.
+2.  **Stylistic**: Analyzes 9 linguistic features (stopword ratio, punctuation density, sentence complexity).
+3.  **TF-IDF**: Captures N-gram patterns and specific keyword associations.
+
+### Meta Models:
+*   **Standard Meta**: A Logistic Regression model that weighs the probabilities from the three base models.
+*   **Social Meta**: Adds a 4th input—the **User Reliability Score**—to the ensemble, providing a more holistic "Social Media" veracity check.
+
+---
 
 ## 🧰 Dependencies
 
-*   `pandas` & `numpy`: Data manipulation
-*   `scikit-learn`: Machine learning algorithms and preprocessing
-*   `sentence-transformers`: Multilingual text embeddings
-*   `torch`: Backend for transformer models
+*   `scikit-learn`: Core ML algorithms
+*   `sentence-transformers`: Multi-lingual embeddings
+*   `pandas` & `numpy`: Data processing
+*   `flask`: Web framework
+*   `lime` & `shap`: Explainability
+*   `matplotlib`: Visualization
 *   `joblib`: Model serialization
-*   `flask`: (Optional) For web deployment

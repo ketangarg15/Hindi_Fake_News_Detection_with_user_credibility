@@ -2,4 +2,6 @@ __pycache__/
 models/
 data/test.csv
 data/train.csv
+data/train_users.csv
+data/test_users.csv
 venv/
