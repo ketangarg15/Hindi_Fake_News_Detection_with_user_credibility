@@ -1,115 +1,320 @@
-🇮🇳 Hindi Fake News Detection System
+# 🇮🇳 Hindi Fake News Detection with User Credibility
 
-A comprehensive, multi-layered machine learning system designed to detect fake news in Hindi. This project leverages a stacking classifier architecture that integrates semantic deep learning, linguistic style analysis, TF-IDF-based keyword extraction, and social media user credibility metrics.
+A comprehensive, multi-layered machine learning system designed to detect fake news in **Hindi**. This project leverages a **stacking classifier architecture** that integrates semantic deep learning, linguistic style analysis, TF-IDF keyword extraction, and **social media user credibility scoring** for context-aware predictions.
 
-🚀 Key Features
-Multi-Model Ensemble
-Combines multiple specialized models to improve prediction accuracy and robustness.
-Social Media Awareness
-Incorporates user credibility scores to enhance fake news detection in social contexts.
-Explainable AI (XAI)
-Utilizes LIME and SHAP to provide transparency by explaining model predictions.
-Interactive Web Interface
-Flask-based dashboard supporting:
-Website Mode (text-only analysis)
-Social Media Mode (text + user profile analysis)
-📂 Project Structure
-├── app/                         
-│   ├── app.py                  # Flask application server  
-│   └── templates/              # HTML templates  
-│  
-├── data/                       
-│   ├── hindi_fake_news.csv     # Fake news dataset  
-│   ├── hindi_true_news.csv     # True news dataset  
-│   ├── users.csv               # Genuine user profiles  
-│   ├── fusers.csv              # Fake/bot profiles  
-│   ├── train.csv / test.csv    # News splits  
-│   └── train_users.csv         # User data splits  
-│  
-├── models/                     # Saved trained models (.pkl)  
-│  
-├── create_dataset.py           # News preprocessing  
-├── create_user_split.py        # User preprocessing  
-├── train_models.py             # Train base text models  
-├── train_user_model.py         # Train user credibility model  
-├── train_meta_model.py         # Train text-only ensemble  
-├── train_social_meta_model.py  # Train social-aware ensemble  
-├── evaluate_models.py          # Performance evaluation  
-├── explainability.py           # LIME & SHAP implementation  
-├── model_pipeline.py           # Unified inference pipeline  
-├── predict.py                  # CLI prediction script  
-└── requirements.txt            # Dependencies  
-🛠️ Installation & Setup
-1. Clone Repository
-git clone https://github.com/ArnavJoshi14/hindi-fake-news-detection
-cd hindi-fake-news-detection
-2. Create Virtual Environment
+> 🔗 **GitHub Repository:** [github.com/ketangarg15/Hindi_Fake_News_Detection_with_user_credibility](https://github.com/ketangarg15/Hindi_Fake_News_Detection_with_user_credibility)
+
+---
+
+## 🚀 Key Features
+
+| Feature | Description |
+|---|---|
+| 🧠 Multi-Model Ensemble | Stacking classifier combining semantic, stylistic, and keyword models |
+| 👤 Social Media Awareness | User credibility scoring to detect bot/fake profiles |
+| 🔍 Explainable AI (XAI) | LIME & SHAP for transparent, interpretable predictions |
+| 🌐 Interactive Web Dashboard | Flask app with Website Mode and Social Media Mode |
+| 🇮🇳 Hindi Language Support | Multilingual SBERT embeddings optimized for Hindi text |
+
+---
+
+## 🧠 Model Architecture
+
+```
+Input: Hindi News Article  [+ Optional: User Profile]
+              │
+              ▼
+   ┌──────────────────────┐
+   │  Multilingual SBERT  │  (multilingual-MiniLM-L12-v2)
+   └──────────────────────┘
+              │
+   ┌──────────┼──────────────┐
+   ▼          ▼              ▼
+Semantic   Stylistic      TF-IDF
+ Model      Model          Model
+(SBERT)  (Linguistic    (N-gram +
+          Features)      Keywords)
+   │          │              │
+   └──────────┼──────────────┘
+              │
+    ┌─────────┴──────────────────────┐
+    │                                │
+    ▼                                ▼
+Standard Meta Model          Social Meta Model
+(Logistic Regression)        (Logistic Regression)
+Text signals only            Text + User Credibility Score
+    │                                │
+    └─────────────┬──────────────────┘
+                  ▼
+         Final Prediction
+          (FAKE / REAL)
+```
+
+---
+
+## 🔹 Base Models
+
+### Semantic Model (SBERT)
+- Uses `multilingual-MiniLM-L12-v2` from Sentence Transformers
+- Captures deep contextual and semantic meaning of Hindi text
+- Language-agnostic embeddings handle Hindi script natively
+
+### Stylistic Model
+Extracts linguistic surface features including:
+- Stopword ratio and function word frequency
+- Punctuation density and capitalization patterns
+- Sentence complexity and average word length
+- Vocabulary diversity metrics
+
+### TF-IDF Model
+- Captures keyword patterns and N-gram frequency distributions
+- Identifies manipulation signals through term weighting
+- Complements semantic model with lexical-level features
+
+## 🔹 Meta Models
+
+### Standard Meta Model
+- Logistic Regression combining outputs of the three text-based models
+- Used for **Website Mode** (text-only analysis)
+
+### Social Meta Model
+- Extends the Standard Meta Model with an additional **User Reliability Score**
+- Used for **Social Media Mode** (text + user profile analysis)
+- Enables context-aware detection accounting for source credibility
+
+---
+
+## 📂 Project Structure
+
+```
+hindi-fake-news-detection/
+│
+├── app/
+│   ├── app.py                       # Flask application server
+│   └── templates/                   # HTML templates
+│
+├── data/
+│   ├── hindi_fake_news.csv          # Fake news dataset
+│   ├── hindi_true_news.csv          # True news dataset
+│   ├── users.csv                    # Genuine user profiles
+│   ├── fusers.csv                   # Fake / bot profiles
+│   ├── train.csv / test.csv         # News train-test splits
+│   └── train_users.csv              # User data splits
+│
+├── models/                          # Saved trained models (.pkl)
+│
+├── create_dataset.py                # News data preprocessing
+├── create_user_split.py             # User data preprocessing
+├── train_models.py                  # Train base text models
+├── train_user_model.py              # Train user credibility model
+├── train_meta_model.py              # Train text-only ensemble
+├── train_social_meta_model.py       # Train social-aware ensemble
+├── evaluate_models.py               # Performance evaluation
+├── explainability.py                # LIME & SHAP implementation
+├── model_pipeline.py                # Unified inference pipeline
+├── predict.py                       # CLI prediction script
+└── requirements.txt                 # Python dependencies
+```
+
+---
+
+## 🛠️ Installation & Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/ketangarg15/Hindi_Fake_News_Detection_with_user_credibility.git
+cd Hindi_Fake_News_Detection_with_user_credibility
+```
+
+### 2. Create and Activate a Virtual Environment
+
+```bash
 python -m venv venv
 
 # Windows
-.\venv\Scripts\activate  
+.\venv\Scripts\activate
 
-# macOS/Linux
+# macOS / Linux
 source venv/bin/activate
-3. Install Dependencies
+```
+
+### 3. Install Dependencies
+
+```bash
 pip install -r requirements.txt
-📈 Training Workflow
+```
 
-Follow the steps below to build the system from scratch:
+---
 
-Step 1: Data Preparation
-python create_dataset.py
-python create_user_split.py
-Step 2: Train Base Models
-python train_models.py        # Semantic, Style, TF-IDF
-python train_user_model.py    # User reliability model
-Step 3: Train Meta Models
-python train_meta_model.py         # Text-only ensemble
-python train_social_meta_model.py  # Social-aware ensemble
-Step 4: Evaluate Models
+## 📊 Dataset
+
+Place the required files in the `data/` directory:
+
+| File | Description |
+|---|---|
+| `hindi_fake_news.csv` | Labeled fake Hindi news articles |
+| `hindi_true_news.csv` | Labeled real Hindi news articles |
+| `users.csv` | Genuine social media user profiles |
+| `fusers.csv` | Fake / bot user profiles |
+| `train.csv` / `test.csv` | Pre-split news data |
+| `train_users.csv` | Pre-split user data |
+
+> **Note:** Each news file should contain at minimum a `text` column with the article body and a `label` column (`0` = Real, `1` = Fake).
+
+---
+
+## 📈 Training Workflow
+
+Run the following scripts **in order** to build the full system from scratch.
+
+### Step 1 — Data Preparation
+
+```bash
+python create_dataset.py       # Preprocess and merge news datasets
+python create_user_split.py    # Preprocess and split user profiles
+```
+
+### Step 2 — Train Base Models
+
+```bash
+python train_models.py         # Trains Semantic, Style, and TF-IDF models
+python train_user_model.py     # Trains User Credibility model
+```
+
+### Step 3 — Train Meta Models
+
+```bash
+python train_meta_model.py          # Text-only ensemble (Standard)
+python train_social_meta_model.py   # Social-aware ensemble (with User Score)
+```
+
+### Step 4 — Evaluate
+
+```bash
 python evaluate_models.py
-🔮 Usage
-1. Web Interface (Recommended)
+```
+
+### Evaluation Output Metrics
+
+| Metric | Description |
+|---|---|
+| **Accuracy** | Overall correct predictions |
+| **Precision** | Of predicted fakes, how many were actually fake |
+| **Recall** | Of actual fakes, how many were correctly identified |
+| **F1 Score** | Harmonic mean of Precision and Recall |
+
+---
+
+## 🔮 Usage
+
+### 1. Web Interface (Recommended)
 
 Launch the Flask application:
 
+```bash
 python app/app.py
+```
 
-Access the dashboard at:
+Open your browser and navigate to:
 
+```
 http://localhost:5000
-2. Command-Line Prediction
+```
+
+The dashboard supports two modes:
+
+- **Website Mode** — Paste a Hindi news article for text-only analysis
+- **Social Media Mode** — Provide both article text and a user profile for credibility-aware analysis
+
+### 2. Command-Line Prediction
+
+```bash
 python predict.py
-3. Explainability
+```
 
-To generate explanations (LIME/SHAP), use functions from:
+Follow the prompts to input a Hindi article and (optionally) a user profile for a quick CLI prediction.
 
-explainability.py
-🧠 Model Architecture
-🔹 Base Models
-Semantic Model (SBERT)
-Uses multilingual-MiniLM-L12-v2
-Captures deep contextual meaning of Hindi text
-Stylistic Model
-Extracts linguistic features such as:
-Stopword ratio
-Punctuation density
-Sentence complexity
-TF-IDF Model
-Captures keyword patterns and N-gram features
-🔹 Meta Models
-Standard Meta Model
-Logistic Regression
-Combines outputs of the three text-based models
-Social Meta Model
-Extends the standard model
-Adds User Reliability Score as an additional feature
-Enables context-aware fake news detection
-🧰 Dependencies
-scikit-learn – Machine learning algorithms
-sentence-transformers – Multilingual embeddings
-pandas, numpy – Data processing
-flask – Web framework
-lime, shap – Explainability tools
-matplotlib – Visualization
-joblib – Model saving/loading
+### 3. Explainability
+
+To generate LIME or SHAP explanations for any prediction:
+
+```bash
+python explainability.py
+```
+
+This outputs feature-level importance scores showing which words or patterns most influenced the prediction — making the model's decision interpretable.
+
+---
+
+## 🧰 Dependencies
+
+| Library | Purpose |
+|---|---|
+| `scikit-learn` | ML algorithms (Random Forest, Logistic Regression) |
+| `sentence-transformers` | Multilingual SBERT embeddings |
+| `pandas`, `numpy` | Data processing and manipulation |
+| `flask` | Web application framework |
+| `lime`, `shap` | Explainability tools |
+| `matplotlib` | Visualization |
+| `joblib` | Model serialization |
+
+Install all at once:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 🎯 Key Advantages
+
+- **Multilingual-ready** — SBERT embeddings handle Hindi script without manual transliteration
+- **Source-aware** — User credibility scoring adds a social trust layer beyond text analysis
+- **Explainable** — LIME/SHAP integration makes predictions interpretable and auditable
+- **Dual-mode** — Supports both pure-text and social media contexts in one system
+- **Modular** — Each model component can be retrained or swapped independently
+
+---
+
+## ⚠️ Limitations
+
+- Performance depends on the quality and diversity of the Hindi news dataset
+- User credibility model requires social media profile data — not always available
+- May underperform on highly informal Hindi or code-mixed Hindi-English text
+- LIME/SHAP explanations add inference latency for real-time use cases
+
+---
+
+## 🚀 Future Improvements
+
+- [ ] Fine-tune on a larger Hindi-specific corpus (e.g., IndicNLP, AI4Bharat)
+- [ ] Support code-mixed Hindi-English text (Hinglish)
+- [ ] Integrate live news APIs for real-time KB updates
+- [ ] Add multi-class labels (Satire / Misleading / False / True)
+- [ ] Dockerize for easy deployment
+- [ ] Build a REST API for programmatic access
+- [ ] Extend to other Indian languages (Tamil, Bengali, Marathi)
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## 👤 Author
+
+**Ketan Garg**
+- GitHub: [@ketangarg15](https://github.com/ketangarg15)
+- Repository: [Hindi_Fake_News_Detection_with_user_credibility](https://github.com/ketangarg15/Hindi_Fake_News_Detection_with_user_credibility)
+
+---
+
+## 🙏 Acknowledgements
+
+- [Hugging Face Sentence Transformers](https://www.sbert.net/) for multilingual SBERT embeddings
+- [LIME](https://github.com/marcotcr/lime) and [SHAP](https://github.com/slundberg/shap) for explainability frameworks
+- [Scikit-learn](https://scikit-learn.org/) for ML utilities
+- AI4Bharat and IndicNLP community for Hindi NLP resources
